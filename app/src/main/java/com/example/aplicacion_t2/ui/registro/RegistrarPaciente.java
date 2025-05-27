@@ -3,7 +3,11 @@ package com.example.aplicacion_t2.ui.registro;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +22,6 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 import cz.msebera.android.httpclient.Header;
-
 
 public class RegistrarPaciente extends Fragment implements View.OnClickListener {
 
@@ -44,30 +47,38 @@ public class RegistrarPaciente extends Fragment implements View.OnClickListener 
         return fragment;
     }
 
+    // NO uses onCreate para manipular las vistas!!
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Solo recupera argumentos si hay
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        nombre = (EditText) getView().findViewById(R.id.etNombreCompleto);
-        edad = (EditText) getView().findViewById(R.id.etEdad);
-        sexo = (EditText) getView().findViewById(R.id.etSexo);
-        altura = (EditText) getView().findViewById(R.id.etAltura);
-        peso = (EditText) getView().findViewById(R.id.etPeso);
-        informacion = (EditText) getView().findViewById(R.id.etInformacion);
-        guardar = (Button) getView().findViewById(R.id.btnGuardar);
-        listar = (Button) getView().findViewById(R.id.btnListar);
-        guardar.setOnClickListener(this);
-        listar.setOnClickListener(this);
     }
 
+    // Aquí inflamos y enlazamos las vistas correctamente
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_registrar_paciente, container, false);
+        View view = inflater.inflate(R.layout.fragment_registrar_paciente, container, false);
+
+        // Aquí inicializamos las vistas con findViewById sobre la vista inflada
+        nombre = view.findViewById(R.id.etNombreCompleto);
+        edad = view.findViewById(R.id.etEdad);
+        sexo = view.findViewById(R.id.etSexo);
+        altura = view.findViewById(R.id.etAltura);
+        peso = view.findViewById(R.id.etPeso);
+        informacion = view.findViewById(R.id.etInformacion);
+        guardar = view.findViewById(R.id.btnGuardar);
+        listar = view.findViewById(R.id.btnListar);
+
+        // Configuramos los listeners
+        guardar.setOnClickListener(this);
+        listar.setOnClickListener(this);
+
+        return view;
     }
 
     @Override
@@ -86,9 +97,17 @@ public class RegistrarPaciente extends Fragment implements View.OnClickListener 
                 return;
             }
 
-            int ed = Integer.parseInt(edadStr);
-            float alt = Float.parseFloat(alturaStr);
-            float pes = Float.parseFloat(pesoStr);
+            int ed;
+            float alt, pes;
+
+            try {
+                ed = Integer.parseInt(edadStr);
+                alt = Float.parseFloat(alturaStr);
+                pes = Float.parseFloat(pesoStr);
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "Edad, altura y peso deben ser números válidos", Toast.LENGTH_LONG).show();
+                return;
+            }
 
             // Validaciones lógicas
             if (ed < 0) {
@@ -100,24 +119,23 @@ public class RegistrarPaciente extends Fragment implements View.OnClickListener 
             }
 
         } else if (v == listar) {
-            Intent intent = new Intent(getContext(), ListarPaciente.class);
-            startActivity(intent);
+            NavController navController = Navigation.findNavController(v);
+            navController.navigate(R.id.action_registrarPaciente_to_listarPaciente);
         }
     }
 
     private void GuardarPaciente(String nom, int ed, String sex, float alt, float pes, String info) {
-
         //Declarar la URL
         String url = servidor + "guardar_paciente.php";
 
         //Enviar parámetros
         RequestParams requestParams = new RequestParams();
-        requestParams.put("nombres",nom);
-        requestParams.put("edad",ed);
-        requestParams.put("sexo",sex);
-        requestParams.put("altura",alt);
-        requestParams.put("peso",pes);
-        requestParams.put("informacion",info);
+        requestParams.put("nombres", nom);
+        requestParams.put("edad", ed);
+        requestParams.put("sexo", sex);
+        requestParams.put("altura", alt);
+        requestParams.put("peso", pes);
+        requestParams.put("informacion", info);
 
         //Envio al web service y respuesta
         AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
@@ -125,15 +143,14 @@ public class RegistrarPaciente extends Fragment implements View.OnClickListener 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String respuesta = new String(responseBody);
-                Toast.makeText(getContext(),"Respuesta: "+ respuesta,Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Respuesta: " + respuesta, Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                 String mensaje = "Error: " + statusCode + " - " + error.getMessage();
-                Toast.makeText(getContext(),mensaje,Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), mensaje, Toast.LENGTH_LONG).show();
             }
         });
-
     }
 }

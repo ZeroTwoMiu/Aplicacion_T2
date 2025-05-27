@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -76,8 +78,17 @@ public class ListarPaciente extends Fragment implements View.OnClickListener, Ad
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_listar_paciente, container, false);
+        View view = inflater.inflate(R.layout.fragment_listar_paciente, container, false);
+
+        lista = view.findViewById(R.id.lstPacientes);
+        nuevo = view.findViewById(R.id.btnNuevo);
+
+        lista.setOnItemClickListener(this);
+        nuevo.setOnClickListener(this);
+
+        MostrarDatos();
+
+        return view;
     }
 
     private void MostrarDatos() {
@@ -149,7 +160,8 @@ public class ListarPaciente extends Fragment implements View.OnClickListener, Ad
 
     @Override
     public void onClick(View v) {
-
+        NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment_content_main);
+        navController.navigate(R.id.registrarPaciente);
     }
 
     @Override
