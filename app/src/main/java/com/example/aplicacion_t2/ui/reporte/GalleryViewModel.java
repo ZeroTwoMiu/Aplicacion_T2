@@ -1,4 +1,4 @@
-package com.example.aplicacion_t2.ui.gallery;
+package com.example.aplicacion_t2.ui.reporte;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

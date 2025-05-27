@@ -1,4 +1,4 @@
-package com.example.aplicacion_t2.ui.home;
+package com.example.aplicacion_t2.ui.registro;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
