@@ -66,13 +66,6 @@ public class ListarPaciente extends Fragment implements View.OnClickListener, Ad
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        lista = (ListView) getView().findViewById(R.id.lstPacientes);
-        lista.setOnItemClickListener(this);
-
-
-        nuevo = (Button) getView().findViewById(R.id.btnNuevo);
-        nuevo.setOnClickListener(this);
-        MostrarDatos();
     }
 
     @Override
@@ -92,27 +85,17 @@ public class ListarPaciente extends Fragment implements View.OnClickListener, Ad
     }
 
     private void MostrarDatos() {
-
-        //Declarar la URL
         String url = servidor + "mostrar_paciente.php";
-
-        //Enviar parámetros
         RequestParams requestParams = new RequestParams();
 
-        //Envio al web service y respuesta
         AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
         asyncHttpClient.get(url, requestParams, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String respuesta = new String(responseBody);
-                // Parsear el JSON
                 try {
                     JSONArray jsonArray = new JSONArray(respuesta);
-
-                    // Crear una lista para almacenar los objetos
                     ArrayList<Paciente> pacientesList = new ArrayList<>();
-
-                    // Recorrer el array JSON y agregar cada paciente a la lista
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject pacienteJson = jsonArray.getJSONObject(i);
 
@@ -124,8 +107,6 @@ public class ListarPaciente extends Fragment implements View.OnClickListener, Ad
                         float alt_paciente = Float.parseFloat(pacienteJson.getString("alt_paciente"));
                         float peso_paciente = Float.parseFloat(pacienteJson.getString("peso_paciente"));
 
-
-                        // Crear un objeto Contact y agregarlo a la lista
                         Paciente paciente = new Paciente(
                                 id_paciente,
                                 nom_paciente,
@@ -138,13 +119,12 @@ public class ListarPaciente extends Fragment implements View.OnClickListener, Ad
                         pacientesList.add(paciente);
                     }
 
-                    // Crear el adaptador
                     PacienteAdapter adapter = new PacienteAdapter(getContext(), pacientesList);
-                    // Establecer el adaptador en el ListView
                     lista.setAdapter(adapter);
 
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Toast.makeText(getContext(), "Error al parsear JSON: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
                 }
             }
 
@@ -154,21 +134,18 @@ public class ListarPaciente extends Fragment implements View.OnClickListener, Ad
                 Toast.makeText(getContext(),mensaje,Toast.LENGTH_LONG).show();
             }
         });
-
-
     }
 
     @Override
     public void onClick(View v) {
-        NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment_content_main);
-        navController.navigate(R.id.registrarPaciente);
+        // Navegar al fragmento para registrar un nuevo paciente
+        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+        navController.navigate(R.id.registrarPaciente); // Usa el ID del destino
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-        if(parent==lista) //si doy click en un item de el listview "lista"
-        {
+        if(parent==lista) {
             TextView tvId = (TextView) view.findViewById(R.id.tvId);
             String idCont = tvId.getText().toString();
             PopupMenu popupMenu = new PopupMenu(getContext(),view);
@@ -181,63 +158,53 @@ public class ListarPaciente extends Fragment implements View.OnClickListener, Ad
                         EditarContacto(idCont);
                     }
                     else if (item.getItemId() == R.id.opc_eliminar) {
-                        // Mostrar el diálogo de confirmación
                         new AlertDialog.Builder(getContext())
                                 .setMessage("¿Estás seguro de que deseas eliminar este contacto?")
                                 .setCancelable(false)
                                 .setPositiveButton("Sí", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        // Si el usuario presiona "Sí", ejecutar EliminarContacto
                                         EliminiarPaciente(idCont);
                                     }
                                 })
-                                .setNegativeButton("No", null) // Si el usuario presiona "No", simplemente cerrar el diálogo
+                                .setNegativeButton("No", null)
                                 .show();
                         return true;
                     }
-
-
                     return false;
                 }
             });
             popupMenu.show();
         }
-
     }
 
     private void EliminiarPaciente(String idCont) {
-
-        //Declarar la URL
         String url = servidor + "eliminar_paciente.php";
-
-        //Enviar parámetros
         RequestParams requestParams = new RequestParams();
         requestParams.put("idCont",idCont);
 
-        //Envio al web service y respuesta
         AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
         asyncHttpClient.get(url, requestParams, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String respuesta = new String(responseBody);
                 Toast.makeText(getContext(), "Respuesta: " + respuesta, Toast.LENGTH_LONG).show();
-
-                Intent intent = new Intent(getContext(), ListarPaciente.class);
-                startActivity(intent); // Iniciar la actividad
+                MostrarDatos();
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                String mensaje = "Error: " + statusCode + " - " + error.getMessage();
+                String mensaje = "Error al eliminar: " + statusCode + " - " + error.getMessage();
                 Toast.makeText(getContext(),mensaje,Toast.LENGTH_LONG).show();
             }
         });
-
     }
 
     private void EditarContacto(String idCont) {
-        Intent intent = new Intent(getContext(), EditarPaciente.class);
-        intent.putExtra("idCont",idCont);
-        startActivity(intent); // Iniciar la actividad
+        // ¡CORRECCIÓN CLAVE AQUÍ! Usar Navigation Components para navegar al fragmento de edición
+        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+        Bundle bundle = new Bundle();
+        bundle.putString("idCont", idCont);
+        // Navegar usando la acción definida en mobile_navigation.xml
+        navController.navigate(R.id.action_listarPaciente_to_editarPaciente2, bundle);
     }
 }

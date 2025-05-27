@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/listarPaciente"
         android:name="com.example.aplicacion_t2.ui.registro.HomeFragment"
-        android:label="@string/menu_home"
+        android:label="Pacientes"
         tools:layout="@layout/fragment_home" >
         <action
             android:id="@+id/action_listarPaciente_to_editarPaciente2"
@@ -21,7 +21,7 @@
     <fragment
         android:id="@+id/nav_gallery"
         android:name="com.example.aplicacion_t2.ui.reporte.GalleryFragment"
-        android:label="@string/menu_gallery"
+        android:label="Reportes"
         tools:layout="@layout/fragment_gallery" />
 
     <fragment

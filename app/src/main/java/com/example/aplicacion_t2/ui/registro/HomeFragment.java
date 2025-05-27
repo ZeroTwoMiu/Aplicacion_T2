@@ -187,5 +187,4 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
         navController.navigate(R.id.action_listarPaciente_to_editarPaciente2, bundle);
     }
 
-
 }
